@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="创作控制台">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="referrer" content="no-referrer">
 <title>创作者控制台</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
@@ -134,6 +141,24 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
 .acomp .btn{height:44px;flex:0 0 auto}
 .btn.stop{background:var(--danger);border-color:var(--danger);color:#fff}
 @media (max-width:640px){.ai{width:100%;border-left:0}.fab{right:14px;bottom:calc(14px + env(safe-area-inset-bottom));height:48px}.aset{max-height:50vh}}
+.appb{display:inline-block;font-size:10.5px;line-height:15px;padding:0 5px;border-radius:5px;background:rgba(52,199,89,.16);color:#5fd47e;margin-right:5px;vertical-align:1px;font-weight:600}
+.appb.low{background:rgba(255,255,255,.07);color:var(--sub)}
+.tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.cmenu{position:fixed;z-index:70;min-width:220px;max-width:280px;background:#20242e;border:1px solid #343a48;border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.cmenu button{display:block;width:100%;text-align:left;height:40px;padding:0 10px;border:0;background:none;border-radius:8px;font-size:14px;cursor:pointer}
+.cmenu button:hover:not([disabled]){background:var(--tile-h)}
+.cmenu button[disabled]{color:#5c6476;cursor:default}
+.cmh{font-weight:700;padding:6px 10px 4px;font-size:14px}
+.cms{font-size:11.5px;color:var(--sub);padding:6px 10px 2px;border-top:1px solid var(--line);margin-top:4px}
+.cmn{font-size:12px;color:#9fb3d9;padding:8px 10px 4px;border-top:1px solid var(--line);margin-top:4px;line-height:1.5}
+.fbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom));z-index:65;width:min(560px,calc(100% - 24px));background:#2b3140;border:1px solid #3c4458;border-radius:14px;padding:10px 10px 10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.fbar span{flex:1 1 100%;font-size:13.5px;line-height:1.5}
+.fbar .btn{height:38px;font-size:13.5px}
+.fbar .ib{margin-left:auto}
+.wxb{margin-top:12px;background:rgba(255,197,61,.1);border:1px solid rgba(255,197,61,.35);color:#ffd77a;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.6}
+.radio{display:flex!important;align-items:flex-start;gap:8px;color:var(--text)!important;font-size:14px!important;margin:8px 0!important;cursor:pointer;line-height:1.45}
+.radio input{width:18px!important;height:18px!important;flex:0 0 auto;margin-top:1px}
+.dlg .tip{font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 </style>
 </head>
 <body>
@@ -147,11 +172,13 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
 </header>
 
 <main class="wrap">
+ <div class="wxb hide" id="wxb"></div>
  <div id="list"></div>
  <div id="noresult" class="empty hide" style="margin-top:22px">没有找到匹配的工具。按 Enter 可直接用必应搜索，或点「添加工具」自己加。</div>
 
  <div class="toolbar">
   <button class="btn pri" id="bAdd">＋ 添加工具</button>
+  <button class="btn" id="bApp">📱 App 模式</button>
   <button class="btn" id="bExport">⬇︎ 导出配置</button>
   <button class="btn" id="bImport">⬆︎ 导入配置</button>
   <button class="btn" id="bFav">🖼 网站图标：开</button>
@@ -160,7 +187,7 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  <div class="foot">
   快捷键：<b>/</b> 聚焦搜索 · <b>1–9</b> 打开第 1–9 个收藏 · <b>Esc</b> 清空搜索 · 搜索框里按 <b>Enter</b> 打开第一个结果<br>
   点 ☆ 收藏，收藏会排在最上面。收藏和自定义工具只保存在这个浏览器里，换设备请用「导出 / 导入配置」。<br>
-  右下角「🤖 AI 助手」可直接调用 DeepSeek、豆包、Kimi、通义千问等模型（需自己的 API Key，密钥只存在本浏览器）。<br>所有链接都在新标签页打开官方网站。网站图标从 Google 加载，离线或打不开时自动显示 emoji。
+  右下角「🤖 AI 助手」可直接调用 DeepSeek、豆包、Kimi、通义千问等模型（需自己的 API Key，密钥只存在本浏览器）。<br>手机上默认直接打开已安装的 App（「📱 App 模式」可改；长按 / 右键单个工具可选用 App 或网页）。没有 App 的工具在新标签页打开官方网站。网站图标从 Google 加载，离线或打不开时自动显示 emoji。
  </div>
 </main>
 
@@ -170,6 +197,9 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  <label for="aUrl">网址</label><input id="aUrl" required placeholder="例如：xiumi.us" inputmode="url">
  <label for="aGroup">分组</label><select id="aGroup"></select>
  <label for="aIcon">图标（可选，一个 emoji 或字）</label><input id="aIcon" maxlength="4" placeholder="留空则用名称首字">
+ <label for="aScheme">手机 App 链接 scheme（可选）</label><input id="aScheme" placeholder="例如 sinaweibo://" spellcheck="false" autocomplete="off" inputmode="url">
+ <label for="aPkg">Android 包名（可选，配合上面的链接，没装时自动回网页）</label><input id="aPkg" placeholder="例如 com.sina.weibo" spellcheck="false" autocomplete="off">
+ <label for="aPc">电脑客户端协议（可选）</label><input id="aPc" placeholder="例如 weixin://" spellcheck="false" autocomplete="off" inputmode="url">
  <div class="row"><button type="button" class="btn" data-close>取消</button><button class="btn pri">保存</button></div>
 </form></div>
 
@@ -205,6 +235,24 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  <div class="amsgs" id="aiMsgs"></div>
  <div class="acomp"><textarea id="aiIn" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行" enterkeyhint="send"></textarea><button class="btn pri" id="aiSend">发送</button></div>
 </aside>
+<div class="mask" id="mApp"><div class="dlg">
+ <h3>📱 App 模式</h3>
+ <div style="color:var(--sub);font-size:13px;line-height:1.6">开启后，点工具会直接打开手机或电脑上已装好、已登录的 App；没有 App 的工具照常用网页打开。</div>
+ <label class="radio"><input type="radio" name="amode" value="auto"> 自动：手机上开，电脑上关（推荐）</label>
+ <label class="radio"><input type="radio" name="amode" value="on"> 总是开（电脑上只有微信、飞书、腾讯会议、Notion 有客户端协议）</label>
+ <label class="radio"><input type="radio" name="amode" value="off"> 关：全部用网页打开</label>
+ <label class="radio"><input type="checkbox" id="aFb"> 打不开 App 时，1.5 秒后自动改用网页（默认关：弹出「用网页打开」按钮，避免和系统弹窗抢）</label>
+ <div id="appEnv" style="font-size:12.5px;color:#9fb3d9;margin-top:6px"></div>
+ <div class="tip">• 单个工具：<b>长按</b>（手机）或<b>右键</b>（电脑）可选「用 App 打开 / 用网页打开」，也能设成这个工具的默认方式。已单独设置 <b id="appPrefN">0</b> 个 <button class="btn" id="appPrefClr" style="height:30px;font-size:12px;padding:0 8px">清除</button><br>
+ • 带 <span class="appb">📱App</span> 的工具能直接打开 App；<span class="appb low">📱App?</span> 表示会先尝试 App，不行自动回网页。<br>
+ • iPhone 会先弹「在“某某”中打开？」，点「打开」即可。<br>
+ • App 只能打开到首页，进不了网页里的具体页面（比如创作者中心），打开后会提示在 App 里怎么找。<br>
+ • 在微信、QQ 里打开本页时，跳转会被拦截，请先用浏览器打开。<br>
+ • 建议把本页「添加到主屏幕」，用起来就像一个 App。</div>
+ <div class="row"><button class="btn pri" data-close>好</button></div>
+</div></div>
+<div class="cmenu hide" id="cmenu"></div>
+<div class="fbar hide" id="fbar"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -300,7 +348,7 @@ function tileHTML(t,favIdx){
  return '<a class="tile" href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer" data-id="'+esc(t.id)+'" title="'+esc(t.name+" · "+d)+'">'+
   (favIdx!=null&&favIdx<9?'<span class="badge">'+(favIdx+1)+'</span>':"")+
   '<span class="icon" style="background:'+esc(t.color||hue(t.name))+'">'+esc(t.icon||Array.from(t.name)[0])+img+'</span>'+
-  '<span class="meta"><div class="name">'+esc(t.name)+'</div><div class="dom">'+esc(d)+'</div></span>'+
+  '<span class="meta"><div class="name">'+esc(t.name)+'</div><div class="dom">'+badgeHTML(t)+esc(d)+'</div></span>'+
   (t.custom?'<button class="del" data-del="'+esc(t.id)+'" title="删除" aria-label="删除">✕</button>':"")+
   '<button class="star'+(on?" on":"")+'" data-star="'+esc(t.id)+'" title="'+(on?"取消收藏":"收藏")+'" aria-label="收藏">'+(on?"★":"☆")+'</button></a>';
 }
@@ -336,10 +384,9 @@ function render(){
 $("#q").addEventListener("input",render);
 $("#q").addEventListener("keydown",function(e){
  if(e.key==="Enter"){e.preventDefault();var q=this.value.trim();if(!q)return;
-  if(visibleOrder.length)openTool(visibleOrder[0]);else window.open("https://www.bing.com/search?q="+encodeURIComponent(q),"_blank","noopener");}
+  if(visibleOrder.length)openSmart(visibleOrder[0]);else window.open("https://www.bing.com/search?q="+encodeURIComponent(q),"_blank","noopener");}
  if(e.key==="Escape"){this.value="";render();this.blur();}
 });
-function openTool(t){window.open(t.url,"_blank","noopener,noreferrer");}
 document.addEventListener("click",function(e){
  var s=e.target.closest("[data-star]"),d=e.target.closest("[data-del]"),j=e.target.closest("[data-jump]");
  if(s){e.preventDefault();e.stopPropagation();var id=s.getAttribute("data-star"),i=favs.indexOf(id);
@@ -357,7 +404,7 @@ document.addEventListener("keydown",function(e){
  if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
  if(document.querySelector(".mask.show"))return;
  if(e.key==="/"){e.preventDefault();$("#q").focus();$("#q").select();return;}
- if(/^[1-9]$/.test(e.key)){var t=byId(favs[+e.key-1]);if(t){e.preventDefault();openTool(t);}else toast("第 "+e.key+" 个收藏位是空的");}
+ if(/^[1-9]$/.test(e.key)){var t=byId(favs[+e.key-1]);if(t){e.preventDefault();openSmart(t);}else toast("第 "+e.key+" 个收藏位是空的");}
 });
 
 // ---- 弹窗 ----
@@ -368,15 +415,17 @@ $("#bAdd").onclick=function(){$("#fAdd").reset();$("#aGroup").value="custom";ope
 $("#fAdd").addEventListener("submit",function(e){
  e.preventDefault();var name=$("#aName").value.trim(),url=normUrl($("#aUrl").value);
  if(!name)return toast("请填写名称");if(!url)return toast("网址格式不对");
- custom.push({id:"c_"+Date.now().toString(36),name:name,alias:"",url:url,icon:$("#aIcon").value.trim(),color:hue(name),group:$("#aGroup").value,custom:true});
+ var sc=$("#aScheme").value.trim(),pk=$("#aPkg").value.trim(),pc=$("#aPc").value.trim();
+ if(sc&&!safeScheme(sc))return toast("App 链接格式不对，应类似 xxx://");if(pk&&!safePkg(pk))return toast("包名格式不对，应类似 com.xxx.yyy");if(pc&&!safeScheme(pc))return toast("电脑协议格式不对，应类似 xxx://");
+ custom.push({id:"c_"+Date.now().toString(36),name:name,alias:"",url:url,icon:$("#aIcon").value.trim(),color:hue(name),group:$("#aGroup").value,custom:true,scheme:safeScheme(sc),pkg:safePkg(pk),pc:safeScheme(pc)});
  sset(K.custom,custom);closeAll();render();toast("已添加「"+name+"」");
 });
 $("#bFav").onclick=function(){showIcons=!showIcons;sset(K.icons,showIcons);render();};
 $("#bReset").onclick=function(){if(confirm("恢复默认会清空收藏和自定义工具（建议先导出）。继续？")){favs=[];custom=[];sset(K.fav,favs);sset(K.custom,custom);render();toast("已恢复默认");}};
 
-function exportJSON(){return JSON.stringify({app:"creator-console",version:2,exportedAt:new Date().toISOString(),ai:aiExport($("#ioKeys").checked),favorites:favs,custom:custom.map(function(c){return {id:c.id,name:c.name,url:c.url,group:c.group,icon:c.icon||""};})},null,2);}
+function exportJSON(){return JSON.stringify({app:"creator-console",version:2,exportedAt:new Date().toISOString(),ai:aiExport($("#ioKeys").checked),favorites:favs,app:{mode:appMode,autoFallback:!!autoFb,perTool:openPref},custom:custom.map(function(c){return {id:c.id,name:c.name,url:c.url,group:c.group,icon:c.icon||"",scheme:c.scheme||"",pkg:c.pkg||"",pc:c.pc||""};})},null,2);}
 function setIO(mode){var ex=mode==="export";$("#ioTitle").textContent=ex?"导出配置":"导入配置";
- $("#ioTip").textContent=ex?"可以下载成文件，或复制下面的内容保存到备忘录 / 发给自己。":"选择之前导出的 JSON 文件，或把内容粘贴到下面。导入会覆盖当前收藏、自定义工具和 AI 设置（文件里有密钥才会导入密钥）。";
+ $("#ioTip").textContent=ex?"可以下载成文件，或复制下面的内容保存到备忘录 / 发给自己。":"选择之前导出的 JSON 文件，或把内容粘贴到下面。导入会覆盖当前收藏、自定义工具、App 模式和 AI 设置（文件里有密钥才会导入密钥）。";
  $("#ioRowExport").classList.toggle("hide",!ex);$("#ioKeysRow").classList.toggle("hide",!ex);if(ex)$("#ioKeys").checked=false;$("#ioRowImport").classList.toggle("hide",ex);$("#ioText").readOnly=ex;$("#ioText").value=ex?exportJSON():"";openDlg("#mIO");}
 $("#bExport").onclick=function(){setIO("export");};
 $("#ioKeys").onchange=function(){$("#ioText").value=exportJSON();};
@@ -393,9 +442,11 @@ $("#ioDo").onclick=function(){
  if(!d||typeof d!=="object")return toast("内容为空");
  var gids=GROUPS.map(function(g){return g.id;});
  var nc=(Array.isArray(d.custom)?d.custom:[]).map(function(c,i){var u=normUrl(c&&c.url);if(!c||!c.name||!u)return null;
-  return {id:String(c.id||("c_imp"+i)).slice(0,40),name:String(c.name).slice(0,30),alias:"",url:u,icon:String(c.icon||"").slice(0,4),color:hue(String(c.name)),group:gids.indexOf(c.group)>=0?c.group:"custom",custom:true};}).filter(Boolean);
+  return {id:String(c.id||("c_imp"+i)).slice(0,40),name:String(c.name).slice(0,30),alias:"",url:u,icon:String(c.icon||"").slice(0,4),color:hue(String(c.name)),group:gids.indexOf(c.group)>=0?c.group:"custom",custom:true,scheme:safeScheme(c.scheme),pkg:safePkg(c.pkg),pc:safeScheme(c.pc)};}).filter(Boolean);
  custom=nc;favs=(Array.isArray(d.favorites)?d.favorites:[]).map(String).filter(function(id){return byId(id);});
- sset(K.custom,custom);sset(K.fav,favs);if(d.ai)aiImport(d.ai);closeAll();render();toast("已导入："+favs.length+" 个收藏，"+custom.length+" 个自定义工具");
+ sset(K.custom,custom);sset(K.fav,favs);if(d.ai)aiImport(d.ai);
+ if(d.app&&typeof d.app==="object"){if(["auto","on","off"].indexOf(d.app.mode)>=0){appMode=d.app.mode;sset(K3.mode,appMode);}if(d.app.autoFallback!=null){autoFb=!!d.app.autoFallback;sset(K3.fb,autoFb);}
+  if(d.app.perTool&&typeof d.app.perTool==="object"){openPref={};Object.keys(d.app.perTool).forEach(function(k){var v=d.app.perTool[k];if(v==="app"||v==="web")openPref[k]=v;});sset(K3.pref,openPref);}appBtnText();}closeAll();render();toast("已导入："+favs.length+" 个收藏，"+custom.length+" 个自定义工具");
 };
 
 // ---- 时钟（北京时间）----
@@ -601,7 +652,143 @@ function aiImport(o){if(!o||typeof o!=="object")return;if(o.provider&&prov(o.pro
  if(o.keys&&typeof o.keys==="object"){Object.keys(o.keys).forEach(function(k){if(typeof o.keys[k]==="string"&&o.keys[k])akeys[k]=o.keys[k];});sset(K2.keys,akeys);}
  if(aiOpen)loadSet();}
 loadSet();
+// ================= App 模式：直接打开已安装的 App =================
+// a:[Android 链接, 包名]（Chrome 用 intent:// 带包名，没装会自动回到网页）；i: iOS 链接；d: 电脑客户端协议；c: 可信度 3 官方文档 / 2 社区常用 / 1 尝试（仅 Android，失败自动回网页）；n: 打开后的提示
+var APP={
+ "douyin":{a:["snssdk1128://feed","com.ss.android.ugc.aweme"],i:"snssdk1128://",c:2},
+ "douyin-creator":{a:["snssdk1128://feed","com.ss.android.ugc.aweme"],i:"snssdk1128://",c:2,n:"已打开抖音：创作者工具在「我 → 右上角 ☰ → 创作者服务中心」"},
+ "xhs":{a:["xhsdiscover://","com.xingin.xhs"],i:"xhsdiscover://",c:2},
+ "xhs-creator":{a:["xhsdiscover://","com.xingin.xhs"],i:"xhsdiscover://",c:2,n:"已打开小红书：发笔记点底部「＋」，数据在「我 → ☰ → 创作中心」"},
+ "channels":{a:["weixin://","com.tencent.mm"],i:"weixin://",d:"weixin://",c:2,n:"已打开微信：视频号在「发现 → 视频号」（视频号没有公开的直达链接）"},
+ "wx":{a:["weixin://","com.tencent.mm"],i:"weixin://",d:"weixin://",c:2},
+ "bilibili":{a:["bilibili://home","tv.danmaku.bili"],i:"bilibili://home",c:2},
+ "bili-member":{a:["bilibili://home","tv.danmaku.bili"],i:"bilibili://home",c:2,n:"已打开B站：创作中心在「我的 → 创作中心」，投稿点「＋」"},
+ "kuaishou":{a:["kwai://home","com.smile.gifmaker"],i:"kwai://home",c:2},
+ "x":{a:["https://x.com/home","com.twitter.android"],i:"twitter://timeline",c:2},
+ "youtube":{a:["https://www.youtube.com/","com.google.android.youtube"],i:"youtube://",c:2},
+ "yt-studio":{a:["https://studio.youtube.com/","com.google.android.apps.youtube.creator"],c:1},
+ "tiktok":{a:["https://www.tiktok.com/","com.zhiliaoapp.musically"],i:"snssdk1233://",c:2},
+ "instagram":{a:["https://www.instagram.com/","com.instagram.android"],i:"instagram://app",c:2},
+ "jianying":{a:["https://www.jianying.com/","com.lemon.lv"],c:1},
+ "capcut":{a:["capcut://","com.lemon.lvoverseas"],i:"capcut://",c:2},
+ "doubao":{a:["doubao://","com.larus.nova"],c:1},
+ "kimi":{a:["https://www.kimi.com/","com.moonshot.kimichat"],c:1},
+ "deepseek":{a:["https://chat.deepseek.com/","com.deepseek.chat"],c:1},
+ "chatgpt":{a:["https://chatgpt.com/","com.openai.chatgpt"],c:1},
+ "grok":{a:["https://grok.com/","ai.x.grok"],c:1},
+ "gemini":{a:["https://gemini.google.com/app","com.google.android.apps.bard"],c:1},
+ "feishu":{a:["feishu://applink/client/op/open","com.ss.android.lark"],i:"feishu://applink/client/op/open",d:"feishu://applink/client/op/open",c:3},
+ "tmeeting":{a:["wemeet://","com.tencent.wemeet.app"],i:"wemeet://",d:"wemeet://",c:2},
+ "notion":{a:["https://www.notion.so/","notion.id"],i:"notion://",d:"notion://www.notion.so/",c:2},
+ "gdrive":{a:["https://drive.google.com/","com.google.android.apps.docs"],i:"googledrive://",c:2}
+};
+var UA=navigator.userAgent||"";
+var PLAT=/iPhone|iPad|iPod/i.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1)?"ios":/Android/i.test(UA)?"android":"desktop";
+var INAPP=/MicroMessenger/i.test(UA)?"微信":/\bQQ\//.test(UA)?"QQ":/Weibo/i.test(UA)?"微博":/DingTalk/i.test(UA)?"钉钉":"";
+// 只有 Chrome 内核的正规浏览器（Chrome / Edge / Samsung / Firefox）才可靠支持 intent://；国产浏览器改用普通 scheme
+var INTENT_OK=PLAT==="android"&&!INAPP&&(/Chrome\/\d+|Firefox\/\d+/.test(UA))&&!/UCBrowser|Quark|HuaweiBrowser|MiuiBrowser|XiaoMi|baiduboxapp|QQBrowser|HeyTapBrowser|VivoBrowser|OppoBrowser|360|SogouMobile|LBBROWSER/i.test(UA);
+var K3={mode:"cc.appmode",fb:"cc.appfb",pref:"cc.openpref"};
+var appMode=sget(K3.mode,"auto"),autoFb=sget(K3.fb,false),openPref=sget(K3.pref,{});
+if(["auto","on","off"].indexOf(appMode)<0)appMode="auto";if(!openPref||typeof openPref!=="object")openPref={};
+function appOn(){return appMode==="on"||(appMode==="auto"&&PLAT!=="desktop");}
+function safeScheme(u){u=String(u||"").trim();if(!u)return "";var m=/^([a-z][a-z0-9+.-]*):/i.exec(u);if(!m)return "";
+ if(/^(javascript|data|vbscript|file|about|blob)$/i.test(m[1]))return "";return u.replace(/[\s#]/g,"");}
+function safePkg(p){p=String(p||"").trim();return /^[a-zA-Z][\w]*(\.[\w]+)+$/.test(p)?p:"";}
+function cfgOf(t){if(t.custom){if(!t.scheme&&!t.pc)return null;return {a:t.scheme?[t.scheme,t.pkg||""]:null,i:t.scheme||"",d:t.pc||"",c:2};}return APP[t.id]||null;}
+function intentURL(u,pkg,web){var m=/^([a-z][a-z0-9+.-]*):(\/\/)?(.*)$/i.exec(u);if(!m)return "";
+ return "intent://"+m[3]+"#Intent;scheme="+m[1]+";"+(pkg?"package="+pkg+";":"")+"S.browser_fallback_url="+encodeURIComponent(web)+";end";}
+// 返回当前平台的打开方式：{url, native(浏览器自己处理回退), c}
+function appLink(t){var a=cfgOf(t);if(!a)return null;
+ if(PLAT==="android"&&a.a&&a.a[0]){var u=a.a[0],pkg=a.a[1],https=/^https?:/i.test(u);
+  if(INTENT_OK&&pkg)return {url:intentURL(u,pkg,t.url),native:true,c:a.c};
+  if(https)return null;return {url:u,c:a.c};}
+ if(PLAT==="ios"&&a.i)return {url:a.i,c:a.c};
+ if(PLAT==="desktop"&&a.d)return {url:a.d,c:a.c};
+ return null;}
+function wantApp(t){var p=openPref[t.id];if(p==="app")return true;if(p==="web")return false;return appOn();}
+function badgeHTML(t){var l=appLink(t);if(!l)return "";var pc=PLAT==="desktop";return '<span class="appb'+(l.c<2?" low":"")+'" title="'+(l.c<2?"尝试用 App 打开，不行会自动回到网页":"支持直接打开 App")+'">'+(pc?"💻":"📱")+"App"+(l.c<2?"?":"")+'</span>';}
+var launchTimer=0;
+function nav(u){if(window.__ccNav)return window.__ccNav(u);location.href=u;}
+function openWeb(t){window.open(t.url,"_blank","noopener,noreferrer");}
+function openSmart(t,force){
+ var mode=force||(wantApp(t)?"app":"web"),l=appLink(t);
+ if(mode==="app"&&l){launch(t,l);return;}
+ if(force==="app"&&!l)toast("「"+t.name+"」在"+(PLAT==="desktop"?"电脑":"这台手机")+"上没有可用的 App 链接，已用网页打开");
+ openWeb(t);}
+function launch(t,l){
+ hideFb();var a=cfgOf(t);if(a&&a.n)setTimeout(function(){toast(a.n);},300);
+ if(l.native){nav(l.url);return;}
+ var left=false;function mark(){if(document.hidden||this===window)left=true;}
+ function onVis(){if(document.hidden)left=true;}
+ window.addEventListener("blur",mark);window.addEventListener("pagehide",mark);document.addEventListener("visibilitychange",onVis);
+ if(PLAT==="desktop"&&/Firefox\//.test(UA)){var f=document.createElement("iframe");f.style.display="none";f.src=l.url;document.body.appendChild(f);setTimeout(function(){f.remove();},3000);}
+ else nav(l.url);
+ clearTimeout(launchTimer);
+ launchTimer=setTimeout(function(){window.removeEventListener("blur",mark);window.removeEventListener("pagehide",mark);document.removeEventListener("visibilitychange",onVis);
+  if(left||document.hidden)return;
+  if(autoFb){if(PLAT==="desktop")openWeb(t);else nav(t.url);}
+  else showFb(t);},1500);}
+function showFb(t){var b=$("#fbar");b.innerHTML='<span>没打开「'+esc(t.name)+'」App？可能没安装，或浏览器拦截了跳转'+(PLAT==="ios"?"（也可能还在等你点系统弹窗里的「打开」）":"")+'</span><button class="btn pri" data-fbweb="'+esc(t.id)+'">用网页打开</button><button class="btn" data-fbalways="'+esc(t.id)+'">以后都用网页</button><button class="ib" data-fbx>✕</button>';
+ b.classList.remove("hide");clearTimeout(b._t);b._t=setTimeout(hideFb,12000);}
+function hideFb(){var b=$("#fbar");if(b)b.classList.add("hide");}
+document.addEventListener("visibilitychange",function(){if(document.hidden)hideFb();});
+$("#fbar").addEventListener("click",function(e){var w=e.target.closest("[data-fbweb]"),al=e.target.closest("[data-fbalways]");
+ if(w){var t=byId(w.getAttribute("data-fbweb"));hideFb();if(t){if(PLAT==="desktop")openWeb(t);else nav(t.url);}}
+ else if(al){var t2=byId(al.getAttribute("data-fbalways"));openPref[t2.id]="web";sset(K3.pref,openPref);hideFb();render();toast("「"+t2.name+"」以后都用网页打开（长按 / 右键可改）");openWeb(t2);}
+ else if(e.target.closest("[data-fbx]"))hideFb();});
 
+// ---- 点击 / 长按 / 右键菜单 ----
+var suppressClick=0,lpTimer=0,lpStart=null,lpFired=false;
+document.addEventListener("click",function(e){
+ if(Date.now()<suppressClick){e.preventDefault();e.stopPropagation();return;}
+ var a=e.target.closest("a.tile");if(!a||e.target.closest("[data-star],[data-del]"))return;
+ var t=byId(a.getAttribute("data-id"));if(!t)return;
+ if(wantApp(t)&&appLink(t)){e.preventDefault();openSmart(t,"app");}
+},true);
+document.addEventListener("contextmenu",function(e){var a=e.target.closest("a.tile");if(!a)return;e.preventDefault();showMenu(byId(a.getAttribute("data-id")),e.clientX,e.clientY);});
+document.addEventListener("touchstart",function(e){var a=e.target.closest("a.tile");if(!a||e.touches.length>1||e.target.closest("[data-star],[data-del]"))return;
+ var tc=e.touches[0];lpStart=[tc.clientX,tc.clientY];clearTimeout(lpTimer);
+ lpTimer=setTimeout(function(){lpFired=true;suppressClick=Date.now()+60000;showMenu(byId(a.getAttribute("data-id")),lpStart[0],lpStart[1]);if(navigator.vibrate)try{navigator.vibrate(15);}catch(x){}},520);},{passive:true});
+document.addEventListener("touchmove",function(e){if(!lpStart)return;var tc=e.touches[0];if(Math.abs(tc.clientX-lpStart[0])>10||Math.abs(tc.clientY-lpStart[1])>10){clearTimeout(lpTimer);lpStart=null;}},{passive:true});
+document.addEventListener("touchend",function(){clearTimeout(lpTimer);lpStart=null;if(lpFired){lpFired=false;suppressClick=Date.now()+450;}},{passive:true});
+document.addEventListener("touchcancel",function(){clearTimeout(lpTimer);lpStart=null;if(lpFired){lpFired=false;suppressClick=Date.now()+450;}},{passive:true});
+var menuTool=null;
+function showMenu(t,x,y){if(!t)return;var m=$("#cmenu");if(menuTool===t&&!m.classList.contains("hide"))return;menuTool=t;
+ var l=appLink(t),p=openPref[t.id]||"",cf=cfgOf(t);
+ function it(act,label,on,dis){return '<button data-cm="'+act+'"'+(dis?" disabled":"")+'>'+(on?"✓ ":"")+label+'</button>';}
+ m.innerHTML='<div class="cmh">'+esc(t.name)+'</div>'+
+  it("app",(PLAT==="desktop"?"💻":"📱")+" 用 App 打开"+(l?"":"（这台设备不支持）"),false,!l)+it("web","🌐 用网页打开")+
+  '<div class="cms">这个工具默认</div>'+it("p-app","用 App",p==="app",!l)+it("p-web","用网页",p==="web")+it("p-","跟随「App 模式」（现在："+(appOn()?"开":"关")+"）",!p)+
+  '<div class="cms"></div>'+it("fav",favs.indexOf(t.id)>=0?"☆ 取消收藏":"★ 收藏")+it("copy","🔗 复制网址")+
+  (cf&&cf.n?'<div class="cmn">'+esc(cf.n.replace(/^已打开/,"在 "))+'</div>':"");
+ m.classList.remove("hide");var w=m.offsetWidth,h=m.offsetHeight;
+ m.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+"px";m.style.top=Math.max(8,Math.min(y,innerHeight-h-8))+"px";}
+function hideMenu(){$("#cmenu").classList.add("hide");menuTool=null;}
+$("#cmenu").addEventListener("click",function(e){var b=e.target.closest("[data-cm]");if(!b||b.disabled)return;var t=menuTool,act=b.getAttribute("data-cm");hideMenu();
+ if(act==="app")openSmart(t,"app");else if(act==="web")openWeb(t);
+ else if(act.indexOf("p-")===0){var v=act.slice(2);if(v)openPref[t.id]=v;else delete openPref[t.id];sset(K3.pref,openPref);render();toast("「"+t.name+"」默认："+(v==="app"?"用 App":v==="web"?"用网页":"跟随 App 模式"));}
+ else if(act==="fav"){var i=favs.indexOf(t.id);if(i>=0)favs.splice(i,1);else favs.push(t.id);sset(K.fav,favs);render();}
+ else if(act==="copy")copyText(t.url);});
+document.addEventListener("pointerdown",function(e){if(!e.target.closest("#cmenu"))hideMenu();},true);
+window.addEventListener("scroll",hideMenu,{passive:true});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")hideMenu();});
+
+// ---- App 模式设置 ----
+function appBtnText(){$("#bApp").textContent=(PLAT==="desktop"?"💻":"📱")+" App 模式："+(appOn()?"开":"关")+(appMode==="auto"?"（自动）":"");}
+$("#bApp").onclick=function(){
+ document.querySelectorAll('input[name="amode"]').forEach(function(r){r.checked=r.value===appMode;});
+ $("#aFb").checked=!!autoFb;
+ var nApp=allTools().filter(function(t){return appLink(t);}).length;
+ $("#appEnv").textContent="当前设备："+(PLAT==="ios"?"iPhone / iPad":PLAT==="android"?"Android"+(INTENT_OK?"（Chrome 内核，没装 App 会自动回到网页）":"（非 Chrome 浏览器，用普通 App 链接）"):"电脑")+(INAPP?" · "+INAPP+"内置浏览器":"")+" · 这台设备上有 "+nApp+" 个工具能直接打开 App。";
+ $("#appPrefN").textContent=Object.keys(openPref).length;openDlg("#mApp");};
+$("#mApp").addEventListener("change",function(e){
+ if(e.target.name==="amode"){appMode=e.target.value;sset(K3.mode,appMode);appBtnText();render();}
+ if(e.target.id==="aFb"){autoFb=e.target.checked;sset(K3.fb,autoFb);}});
+$("#appPrefClr").onclick=function(){openPref={};sset(K3.pref,openPref);$("#appPrefN").textContent="0";render();toast("已清除单独设置");};
+if(INAPP){var wb=$("#wxb");wb.innerHTML="⚠️ 你正在"+INAPP+"里打开，"+INAPP+"会拦截跳转到其他 App。请点右上角 <b>···</b>，选择<b>「"+(PLAT==="ios"?"在 Safari 中打开":"在浏览器打开")+"」</b>。";wb.classList.remove("hide");}
+appBtnText();
+
+if(location.protocol==="https:"&&"serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 var tt;function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("show");},1800);}
 render();
 })();
