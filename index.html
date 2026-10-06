@@ -245,7 +245,8 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  <div id="appEnv" style="font-size:12.5px;color:#9fb3d9;margin-top:6px"></div>
  <div class="tip">• 单个工具：<b>长按</b>（手机）或<b>右键</b>（电脑）可选「用 App 打开 / 用网页打开」，也能设成这个工具的默认方式。已单独设置 <b id="appPrefN">0</b> 个 <button class="btn" id="appPrefClr" style="height:30px;font-size:12px;padding:0 8px">清除</button><br>
  • 带 <span class="appb">📱App</span> 的工具能直接打开 App；<span class="appb low">📱App?</span> 表示会先尝试 App，不行自动回网页。<br>
- • iPhone 会先弹「在“某某”中打开？」，点「打开」即可。<br>
+ • iPhone：ChatGPT、Grok、Claude、Gemini、Kimi、千问、剪映、CapCut、可灵用的是 App 官网登记的「通用链接」，装了 App 会直接打开；如果还是进了网页，在网页顶部点「打开」/「在 App 中打开」一次，系统会记住。其余 App 会先弹「在“某某”中打开？」，点「打开」即可。DeepSeek、必剪的 iOS 版没有公开链接，只能用网页。<br>
+ • Android 推荐用 Chrome（或 Edge、三星浏览器）打开本页：带包名直接打开 App，没装自动回网页。国产浏览器（夸克、UC、华为、小米等）用 App 自带的链接；Gemini、Claude、可灵、即梦没有自带链接，会试着按包名启动，不行就弹「用网页打开」。长按工具还有「🚀 备用：按包名启动 App」。<br>
  • App 只能打开到首页，进不了网页里的具体页面（比如创作者中心），打开后会提示在 App 里怎么找。<br>
  • 在微信、QQ 里打开本页时，跳转会被拦截，请先用浏览器打开。<br>
  • 建议把本页「添加到主屏幕」，用起来就像一个 App。</div>
@@ -343,9 +344,9 @@ function normUrl(u){u=String(u||"").trim();if(!u)return "";if(!/^[a-z][a-z0-9+.-
 function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return "hsl("+h+",55%,42%)";}
 
 function tileHTML(t,favIdx){
- var on=favs.indexOf(t.id)>=0, d=host(t.url);
+ var on=favs.indexOf(t.id)>=0, d=host(t.url), ul=uniHref(t);
  var img=showIcons?'<img alt="" loading="lazy" referrerpolicy="no-referrer" src="https://www.google.com/s2/favicons?sz=64&domain='+encodeURIComponent(d)+'" onerror="this.remove()">':"";
- return '<a class="tile" href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer" data-id="'+esc(t.id)+'" title="'+esc(t.name+" · "+d)+'">'+
+ return '<a class="tile" href="'+esc(ul||t.url)+'"'+(ul?"":' target="_blank"')+' rel="noopener noreferrer" data-id="'+esc(t.id)+'" title="'+esc(t.name+" · "+d)+'">'+
   (favIdx!=null&&favIdx<9?'<span class="badge">'+(favIdx+1)+'</span>':"")+
   '<span class="icon" style="background:'+esc(t.color||hue(t.name))+'">'+esc(t.icon||Array.from(t.name)[0])+img+'</span>'+
   '<span class="meta"><div class="name">'+esc(t.name)+'</div><div class="dom">'+badgeHTML(t)+esc(d)+'</div></span>'+
@@ -653,7 +654,11 @@ function aiImport(o){if(!o||typeof o!=="object")return;if(o.provider&&prov(o.pro
  if(aiOpen)loadSet();}
 loadSet();
 // ================= App 模式：直接打开已安装的 App =================
-// a:[Android 链接, 包名]（Chrome 用 intent:// 带包名，没装会自动回到网页）；i: iOS 链接；d: 电脑客户端协议；c: 可信度 3 官方文档 / 2 社区常用 / 1 尝试（仅 Android，失败自动回网页）；n: 打开后的提示
+// a:[Android 链接, 包名, 非 Chrome 浏览器用的 App 链接]（Chrome 用 intent:// 带包名，没装会自动回到网页）
+// i: iOS 自定义链接（会弹「在 App 中打开？」）；u: iOS 通用链接（App 官网登记的 https 地址，装了 App 系统直接打开，没装就是网页）
+// d: 电脑客户端协议；c: 可信度 3 官方文档 / 2 已核实（安装包或官网登记）/ 1 尝试（失败自动回网页）；ac / ic: Android / iOS 单独的可信度
+// n: 打开后的提示；ni: iOS 上没有公开链接时的说明
+var NI="iOS 版没有公开的 App 跳转链接，iPhone 上只能用网页（或回主屏幕直接点 App 图标）";
 var APP={
  "douyin":{a:["snssdk1128://feed","com.ss.android.ugc.aweme"],i:"snssdk1128://",c:2},
  "douyin-creator":{a:["snssdk1128://feed","com.ss.android.ugc.aweme"],i:"snssdk1128://",c:2,n:"已打开抖音：创作者工具在「我 → 右上角 ☰ → 创作者服务中心」"},
@@ -664,19 +669,24 @@ var APP={
  "bilibili":{a:["bilibili://home","tv.danmaku.bili"],i:"bilibili://home",c:2},
  "bili-member":{a:["bilibili://home","tv.danmaku.bili"],i:"bilibili://home",c:2,n:"已打开B站：创作中心在「我的 → 创作中心」，投稿点「＋」"},
  "kuaishou":{a:["kwai://home","com.smile.gifmaker"],i:"kwai://home",c:2},
- "x":{a:["https://x.com/home","com.twitter.android"],i:"twitter://timeline",c:2},
- "youtube":{a:["https://www.youtube.com/","com.google.android.youtube"],i:"youtube://",c:2},
- "yt-studio":{a:["https://studio.youtube.com/","com.google.android.apps.youtube.creator"],c:1},
- "tiktok":{a:["https://www.tiktok.com/","com.zhiliaoapp.musically"],i:"snssdk1233://",c:2},
- "instagram":{a:["https://www.instagram.com/","com.instagram.android"],i:"instagram://app",c:2},
- "jianying":{a:["https://www.jianying.com/","com.lemon.lv"],c:1},
- "capcut":{a:["capcut://","com.lemon.lvoverseas"],i:"capcut://",c:2},
- "doubao":{a:["doubao://","com.larus.nova"],c:1},
- "kimi":{a:["https://www.kimi.com/","com.moonshot.kimichat"],c:1},
- "deepseek":{a:["https://chat.deepseek.com/","com.deepseek.chat"],c:1},
- "chatgpt":{a:["https://chatgpt.com/","com.openai.chatgpt"],c:1},
- "grok":{a:["https://grok.com/","ai.x.grok"],c:1},
- "gemini":{a:["https://gemini.google.com/app","com.google.android.apps.bard"],c:1},
+ "x":{a:["https://x.com/home","com.twitter.android","twitter://timeline"],i:"twitter://timeline",c:2},
+ "youtube":{a:["https://www.youtube.com/","com.google.android.youtube","vnd.youtube://"],i:"youtube://",c:2},
+ "yt-studio":{a:["https://studio.youtube.com/","com.google.android.apps.youtube.creator"],c:2},
+ "tiktok":{a:["https://www.tiktok.com/","com.zhiliaoapp.musically","snssdk1233://"],i:"snssdk1233://",c:2},
+ "instagram":{a:["https://www.instagram.com/","com.instagram.android","instagram://"],i:"instagram://app",c:2},
+ "jianying":{a:["videocut://","com.lemon.lv"],u:"https://z.editorjianying.com/",c:2},
+ "capcut":{a:["capcut://","com.lemon.lvoverseas"],u:"https://www.capcut.com/",c:2},
+ "bcut":{a:["bcut://","com.bilibili.studio"],c:2,ni:NI},
+ "chatgpt":{a:["chatgpt://","com.openai.chatgpt"],u:"https://chatgpt.com/#native",c:2},
+ "grok":{a:["https://grok.com/","ai.x.grok","xai-grok://chat"],u:"https://grok.com/",c:2},
+ "gemini":{a:["https://gemini.google.com/gemini/download/mobile","com.google.android.apps.bard"],u:"https://gemini.google.com/app/download/mobile",c:2},
+ "claude":{a:["https://claude.ai/new","com.anthropic.claude"],u:"https://claude.ai/new",c:2,ac:1},
+ "deepseek":{a:["dpsk://chat/new","com.deepseek.chat"],c:2,ni:NI},
+ "doubao":{a:["doubao://","com.larus.nova"],i:"doubao://",c:2,ic:1},
+ "kimi":{a:["kimi://","com.moonshot.kimichat"],u:"https://www.kimi.com/app/",c:2},
+ "qianwen":{a:["tongyi://","com.aliyun.tongyi"],u:"https://www.qianwen.com/app/",c:2},
+ "jimeng":{a:["https://jimeng.jianying.com/","com.bytedance.dreamina"],c:1,ni:NI},
+ "kling":{a:["https://klingai.kuaishou.com/klingapp/","com.kwai.kling"],u:"https://klingai.kuaishou.com/klingapp/",c:2,ac:1},
  "feishu":{a:["feishu://applink/client/op/open","com.ss.android.lark"],i:"feishu://applink/client/op/open",d:"feishu://applink/client/op/open",c:3},
  "tmeeting":{a:["wemeet://","com.tencent.wemeet.app"],i:"wemeet://",d:"wemeet://",c:2},
  "notion":{a:["https://www.notion.so/","notion.id"],i:"notion://",d:"notion://www.notion.so/",c:2},
@@ -697,14 +707,20 @@ function safePkg(p){p=String(p||"").trim();return /^[a-zA-Z][\w]*(\.[\w]+)+$/.te
 function cfgOf(t){if(t.custom){if(!t.scheme&&!t.pc)return null;return {a:t.scheme?[t.scheme,t.pkg||""]:null,i:t.scheme||"",d:t.pc||"",c:2};}return APP[t.id]||null;}
 function intentURL(u,pkg,web){var m=/^([a-z][a-z0-9+.-]*):(\/\/)?(.*)$/i.exec(u);if(!m)return "";
  return "intent://"+m[3]+"#Intent;scheme="+m[1]+";"+(pkg?"package="+pkg+";":"")+"S.browser_fallback_url="+encodeURIComponent(web)+";end";}
+// 按包名直接启动 App 首页。Chrome 只允许打开带 BROWSABLE 的页面，所以这招在 Chrome 里无效（会回到网页），只给国产浏览器当备用
+function launcherURL(pkg,web){return "intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package="+pkg+";S.browser_fallback_url="+encodeURIComponent(web)+";end";}
 // 返回当前平台的打开方式：{url, native(浏览器自己处理回退), c}
 function appLink(t){var a=cfgOf(t);if(!a)return null;
- if(PLAT==="android"&&a.a&&a.a[0]){var u=a.a[0],pkg=a.a[1],https=/^https?:/i.test(u);
-  if(INTENT_OK&&pkg)return {url:intentURL(u,pkg,t.url),native:true,c:a.c};
-  if(https)return null;return {url:u,c:a.c};}
- if(PLAT==="ios"&&a.i)return {url:a.i,c:a.c};
+ if(PLAT==="android"&&a.a&&a.a[0]){var u=a.a[0],pkg=a.a[1],ac=a.ac||a.c;
+  if(INTENT_OK&&pkg)return {url:intentURL(u,pkg,t.url),native:true,c:ac};
+  // 非 Chrome 浏览器：https 链接打不开 App，改用 App 自己的链接；没有的话试「启动器」方式（部分国产浏览器支持，不行会弹「用网页打开」）
+  if(/^https?:/i.test(u))u=a.a[2]||"";if(u)return {url:u,c:ac};
+  return pkg?{url:launcherURL(pkg,t.url),c:1,launcher:true}:null;}
+ if(PLAT==="ios"&&a.u)return {url:a.u,native:true,uni:true,c:a.ic||a.c};
+ if(PLAT==="ios"&&a.i)return {url:a.i,c:a.ic||a.c};
  if(PLAT==="desktop"&&a.d)return {url:a.d,c:a.c};
  return null;}
+function uniHref(t){if(PLAT!=="ios"||!wantApp(t))return "";var l=appLink(t);return l&&l.uni?l.url:"";}
 function wantApp(t){var p=openPref[t.id];if(p==="app")return true;if(p==="web")return false;return appOn();}
 function badgeHTML(t){var l=appLink(t);if(!l)return "";var pc=PLAT==="desktop";return '<span class="appb'+(l.c<2?" low":"")+'" title="'+(l.c<2?"尝试用 App 打开，不行会自动回到网页":"支持直接打开 App")+'">'+(pc?"💻":"📱")+"App"+(l.c<2?"?":"")+'</span>';}
 var launchTimer=0;
@@ -713,7 +729,9 @@ function openWeb(t){window.open(t.url,"_blank","noopener,noreferrer");}
 function openSmart(t,force){
  var mode=force||(wantApp(t)?"app":"web"),l=appLink(t);
  if(mode==="app"&&l){launch(t,l);return;}
- if(force==="app"&&!l)toast("「"+t.name+"」在"+(PLAT==="desktop"?"电脑":"这台手机")+"上没有可用的 App 链接，已用网页打开");
+ var cf=cfgOf(t);
+ if(mode==="app"&&!l&&PLAT==="ios"&&cf&&cf.ni)toast("「"+t.name+"」"+cf.ni+"，已用网页打开");
+ else if(force==="app"&&!l)toast("「"+t.name+"」在"+(PLAT==="desktop"?"电脑":"这台手机")+"上没有可用的 App 链接，已用网页打开");
  openWeb(t);}
 function launch(t,l){
  hideFb();var a=cfgOf(t);if(a&&a.n)setTimeout(function(){toast(a.n);},300);
@@ -743,7 +761,10 @@ document.addEventListener("click",function(e){
  if(Date.now()<suppressClick){e.preventDefault();e.stopPropagation();return;}
  var a=e.target.closest("a.tile");if(!a||e.target.closest("[data-star],[data-del]"))return;
  var t=byId(a.getAttribute("data-id"));if(!t)return;
- if(wantApp(t)&&appLink(t)){e.preventDefault();openSmart(t,"app");}
+ var l=wantApp(t)&&appLink(t);
+ if(l&&l.uni){hideFb();var cf=cfgOf(t);if(cf&&cf.n)setTimeout(function(){toast(cf.n);},300);if(window.__ccNav){e.preventDefault();window.__ccNav(l.url);}return;}
+ if(l){e.preventDefault();openSmart(t,"app");}
+ else if(wantApp(t)&&PLAT==="ios"){var c2=cfgOf(t);if(c2&&c2.ni){e.preventDefault();openSmart(t);}}
 },true);
 document.addEventListener("contextmenu",function(e){var a=e.target.closest("a.tile");if(!a)return;e.preventDefault();showMenu(byId(a.getAttribute("data-id")),e.clientX,e.clientY);});
 document.addEventListener("touchstart",function(e){var a=e.target.closest("a.tile");if(!a||e.touches.length>1||e.target.closest("[data-star],[data-del]"))return;
@@ -757,15 +778,18 @@ function showMenu(t,x,y){if(!t)return;var m=$("#cmenu");if(menuTool===t&&!m.clas
  var l=appLink(t),p=openPref[t.id]||"",cf=cfgOf(t);
  function it(act,label,on,dis){return '<button data-cm="'+act+'"'+(dis?" disabled":"")+'>'+(on?"✓ ":"")+label+'</button>';}
  m.innerHTML='<div class="cmh">'+esc(t.name)+'</div>'+
-  it("app",(PLAT==="desktop"?"💻":"📱")+" 用 App 打开"+(l?"":"（这台设备不支持）"),false,!l)+it("web","🌐 用网页打开")+
+  it("app",(PLAT==="desktop"?"💻":"📱")+" 用 App 打开"+(l?"":"（这台设备不支持）"),false,!l)+
+  (PLAT==="android"&&!INTENT_OK&&!INAPP&&cf&&cf.a&&safePkg(cf.a[1])&&!(l&&l.launcher)?it("launch","🚀 备用：按包名启动 App"):"")+it("web","🌐 用网页打开")+
   '<div class="cms">这个工具默认</div>'+it("p-app","用 App",p==="app",!l)+it("p-web","用网页",p==="web")+it("p-","跟随「App 模式」（现在："+(appOn()?"开":"关")+"）",!p)+
   '<div class="cms"></div>'+it("fav",favs.indexOf(t.id)>=0?"☆ 取消收藏":"★ 收藏")+it("copy","🔗 复制网址")+
-  (cf&&cf.n?'<div class="cmn">'+esc(cf.n.replace(/^已打开/,"在 "))+'</div>':"");
+  (cf&&cf.n?'<div class="cmn">'+esc(cf.n.replace(/^已打开/,"在 "))+'</div>':"")+
+  (!l&&PLAT==="ios"&&cf&&cf.ni?'<div class="cmn">'+esc(cf.ni)+'</div>':"");
  m.classList.remove("hide");var w=m.offsetWidth,h=m.offsetHeight;
  m.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+"px";m.style.top=Math.max(8,Math.min(y,innerHeight-h-8))+"px";}
 function hideMenu(){$("#cmenu").classList.add("hide");menuTool=null;}
 $("#cmenu").addEventListener("click",function(e){var b=e.target.closest("[data-cm]");if(!b||b.disabled)return;var t=menuTool,act=b.getAttribute("data-cm");hideMenu();
  if(act==="app")openSmart(t,"app");else if(act==="web")openWeb(t);
+ else if(act==="launch"){var c3=cfgOf(t);launch(t,{url:launcherURL(safePkg(c3.a[1]),t.url),c:1});}
  else if(act.indexOf("p-")===0){var v=act.slice(2);if(v)openPref[t.id]=v;else delete openPref[t.id];sset(K3.pref,openPref);render();toast("「"+t.name+"」默认："+(v==="app"?"用 App":v==="web"?"用网页":"跟随 App 模式"));}
  else if(act==="fav"){var i=favs.indexOf(t.id);if(i>=0)favs.splice(i,1);else favs.push(t.id);sset(K.fav,favs);render();}
  else if(act==="copy")copyText(t.url);});
