@@ -159,6 +159,37 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
 .radio{display:flex!important;align-items:flex-start;gap:8px;color:var(--text)!important;font-size:14px!important;margin:8px 0!important;cursor:pointer;line-height:1.45}
 .radio input{width:18px!important;height:18px!important;flex:0 0 auto;margin-top:1px}
 .dlg .tip{font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+
+/* ---- 今日抖音热榜 ---- */
+#hot .hh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#hot .hh h2{margin:0}
+#hot .hmeta{color:var(--sub);font-size:12px}
+#hot .hact{margin-left:auto;display:flex;gap:6px;align-items:center}
+#hot .hact .btn{height:32px;padding:0 10px;font-size:13px}
+#hot .chip.on{color:#fff;border-color:var(--acc);background:rgba(79,140,255,.18)}
+.hbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-top:10px;overflow:hidden}
+.hwarn{padding:9px 12px;font-size:13px;color:#ffd27a;background:rgba(255,197,61,.08);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hwarn .btn{height:30px;font-size:12.5px;padding:0 10px}
+.hlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.hit{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);min-width:0}
+.hrk{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--tile);color:var(--sub);font-variant-numeric:tabular-nums}
+.hrk.t1{background:#ff4d4f;color:#fff}.hrk.t2{background:#ff7a45;color:#fff}.hrk.t3{background:#ffa940;color:#fff}
+.htt{flex:1;min-width:0}
+.htt a{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htt a:hover{color:var(--acc)}
+.htt small{color:var(--sub);font-size:11.5px}
+.htt .ait{color:#7fb0ff;margin-left:6px}
+.huse{flex:0 0 auto;height:30px;padding:0 9px;border-radius:9px;border:1px solid var(--line);background:var(--tile);cursor:pointer;font-size:12.5px;color:var(--text);white-space:nowrap}
+.huse:hover{border-color:var(--acc);color:#fff}
+.hmore{display:block;width:100%;height:38px;border:0;background:none;color:var(--sub);cursor:pointer;font-size:13px}
+.hmore:hover{color:var(--text)}
+.hempty{padding:18px 12px;color:var(--sub);font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#mHot .dlg{max-width:720px}
+#mHot textarea{min-height:260px;font-size:13px;line-height:1.55}
+#mHot .achips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#mHot .chip.on{color:#fff;border-color:var(--acc);background:rgba(79,140,255,.18)}
+#mHot .src{font-size:11.5px;color:var(--sub);margin-top:8px}
+@media (max-width:640px){.hlist{grid-template-columns:1fr}#hot .hact{margin-left:0;width:100%}}
 </style>
 </head>
 <body>
@@ -173,6 +204,12 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
 
 <main class="wrap">
  <div class="wxb hide" id="wxb"></div>
+
+ <section id="hot">
+  <div class="hh"><h2>🔥 今日抖音热榜 <span class="n" id="hotN"></span></h2><span class="hmeta" id="hotMeta">加载中…</span>
+   <div class="hact"><button class="chip" id="hotAI" type="button" title="按关键词筛出和 AI 相关的热点">🤖 只看 AI 相关</button><button class="btn" id="hotRef" type="button">↻ 刷新</button></div></div>
+  <div class="hbox" id="hotBox"><div class="hempty">加载中…</div></div>
+ </section>
  <div id="list"></div>
  <div id="noresult" class="empty hide" style="margin-top:22px">没有找到匹配的工具。按 Enter 可直接用必应搜索，或点「添加工具」自己加。</div>
 
@@ -187,7 +224,7 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  <div class="foot">
   快捷键：<b>/</b> 聚焦搜索 · <b>1–9</b> 打开第 1–9 个收藏 · <b>Esc</b> 清空搜索 · 搜索框里按 <b>Enter</b> 打开第一个结果<br>
   点 ☆ 收藏，收藏会排在最上面。收藏和自定义工具只保存在这个浏览器里，换设备请用「导出 / 导入配置」。<br>
-  右下角「🤖 AI 助手」可直接调用 DeepSeek、豆包、Kimi、通义千问等模型（需自己的 API Key，密钥只存在本浏览器）。<br>手机上默认直接打开已安装的 App（「📱 App 模式」可改；长按 / 右键单个工具可选用 App 或网页）。没有 App 的工具在新标签页打开官方网站。网站图标从 Google 加载，离线或打不开时自动显示 emoji。
+  右下角「🤖 AI 助手」可直接调用 DeepSeek、豆包、Kimi、通义千问等模型（需自己的 API Key，密钥只存在本浏览器）。<br>手机上默认直接打开已安装的 App（「📱 App 模式」可改；长按 / 右键单个工具可选用 App 或网页）。没有 App 的工具在新标签页打开官方网站。网站图标从 Google 加载，离线或打不开时自动显示 emoji。<br>「🔥 今日抖音热榜」来自免费第三方接口 v2.xxapi.cn（备用 60s.viki.moe），不是抖音官方数据，可能延迟或暂时打不开；打不开时显示上次成功获取的缓存。选题评分、钩子、脚本、去 AI 味提示词改编自 Easel（ZJU-REAL/Easel，Apache-2.0）。
  </div>
 </main>
 
@@ -251,6 +288,14 @@ details summary{cursor:pointer;font-size:12px;color:var(--sub)}
  • 在微信、QQ 里打开本页时，跳转会被拦截，请先用浏览器打开。<br>
  • 建议把本页「添加到主屏幕」，用起来就像一个 App。</div>
  <div class="row"><button class="btn pri" data-close>好</button></div>
+</div></div>
+<div class="mask" id="mHot"><div class="dlg">
+ <h3>用这个选题</h3>
+ <div style="color:var(--sub);font-size:13px">选题：<b id="hTopic" style="color:var(--text)"></b></div>
+ <div class="achips" id="hTpls"></div>
+ <textarea id="hText" spellcheck="false"></textarea>
+ <div class="row"><button class="btn" data-close>关闭</button><button class="btn" id="hCopy">复制提示词</button><button class="btn pri" id="hToAI">发给 AI 助手</button></div>
+ <div class="src">提示词改编自 <a href="https://github.com/ZJU-REAL/Easel" target="_blank" rel="noopener noreferrer" style="color:var(--acc)">Easel</a>（ZJU-REAL，Apache-2.0）的 topic-evaluator、hook-generator、video-script、text-polisher 技能，已精简改写为中文提示词。</div>
 </div></div>
 <div class="cmenu hide" id="cmenu"></div>
 <div class="fbar hide" id="fbar"></div>
@@ -376,7 +421,8 @@ function render(){
   chips+='<button class="chip" data-jump="g-'+g.id+'">'+g.e+" "+esc(g.name)+'</button>';
  });
  $("#list").innerHTML=html;
- $("#chips").innerHTML=chips;
+ $("#chips").innerHTML=(q?"":'<button class="chip" data-jump="hot">🔥 热榜</button>')+chips;
+ var hs=$("#hot");if(hs)hs.classList.toggle("hide",!!q);
  $("#noresult").classList.toggle("hide",!(q&&!total&&!favTools.length));
  $("#bFav").textContent="🖼 网站图标："+(showIcons?"开":"关");
 }
@@ -815,6 +861,86 @@ appBtnText();
 if(location.protocol==="https:"&&"serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 var tt;function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("show");},1800);}
 render();
+// ================= 今日抖音热榜 =================
+// 数据：免费第三方接口（非抖音官方），依次尝试，全部失败时用 localStorage 里上次成功的结果
+// 提示词模板改编自 Easel（https://github.com/ZJU-REAL/Easel，Apache-2.0）的 skill-topic-evaluator、
+// skill-hook-generator、video-script、text-polisher，已精简并改写。
+(function(){
+var HSRC=[
+ {name:"xxapi.cn",url:"https://v2.xxapi.cn/api/douyinhot"},
+ {name:"60s.viki.moe",url:"https://60s.viki.moe/v2/douyin"}
+];
+var HK="cc.hot.douyin",HAI="cc.hot.aionly",SHOW=15;
+var AIRE=/(AI|AIGC|GPT|ChatGPT|OpenAI|DeepSeek|Claude|Gemini|Grok|Kimi|Sora|Seedance|Agent|LLM|人工智能|大模型|智能体|机器人|豆包|元宝|千问|通义|文心|智谱|即梦|可灵|算力|芯片|英伟达|数字人|具身|自动驾驶|智驾|无人驾驶|无人机|马斯克|黄仁勋|宇树|鸿蒙|华为)/i;
+var hItems=[],hState={ok:false,t:0,src:"",cached:false,loading:false,err:""},hAll=false,hAI=!!sget(HAI,false),hCur=null,hTplI=0;
+var fmtHM=null;try{fmtHM=new Intl.DateTimeFormat("zh-CN",{timeZone:"Asia/Shanghai",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});}catch(e){}
+function tstr(t){var d=new Date(t);return fmtHM?fmtHM.format(d):d.toLocaleString();}
+function ago(t){var m=Math.round((Date.now()-t)/60000);if(m<1)return "刚刚";if(m<60)return m+" 分钟前";var h=Math.round(m/60);return h<48?h+" 小时前":Math.round(h/24)+" 天前";}
+function hotFmt(v){var n=Number(v);if(!isFinite(n)||n<=0)return String(v||"");if(n>=1e8)return (n/1e8).toFixed(2).replace(/\.?0+$/,"")+" 亿";if(n>=1e4)return (n/1e4).toFixed(1).replace(/\.0$/,"")+" 万";return String(n);}
+function pick(o,ks){if(!o||typeof o!=="object")return "";for(var i=0;i<ks.length;i++){var v=o[ks[i]];if(typeof v==="number"&&isFinite(v))return String(v);if(typeof v==="string"&&v.trim())return v.trim();}return "";}
+function safeHttp(u){u=String(u||"");return /^https?:\/\//i.test(u)?u:"";}
+function parseHot(j){var d=j&&j.data;if(d&&!Array.isArray(d))d=d.data||d.list||[];if(!Array.isArray(d))return [];var out=[];
+ d.forEach(function(it,i){if(typeof it==="string"){if(it.trim())out.push({title:it.trim(),hot:"",url:""});return;}if(!it||typeof it!=="object")return;
+  var title=pick(it,["word","title","name","keyword"]);if(!title)return;
+  out.push({title:title,hot:pick(it,["hot_value","hot","hotValue","num"]),url:safeHttp(pick(it,["url","link","mobil_url"]))});});
+ return out.slice(0,60);}
+function dyURL(it){return it.url||("https://www.douyin.com/search/"+encodeURIComponent(it.title));}
+async function getJSON(u){var c=new AbortController(),tm=setTimeout(function(){c.abort();},8000);
+ try{var r=await fetch(u,{signal:c.signal,cache:"no-store",referrerPolicy:"no-referrer"});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json();}finally{clearTimeout(tm);}}
+async function hotLoad(){if(hState.loading)return;hState.loading=true;hotRender();var errs=[];
+ for(var i=0;i<HSRC.length;i++){try{var items=parseHot(await getJSON(HSRC[i].url));if(items.length){hItems=items;hState={ok:true,t:Date.now(),src:HSRC[i].name,cached:false,loading:false,err:""};sset(HK,{t:hState.t,src:hState.src,items:items});hotRender();return;}errs.push(HSRC[i].name+" 无数据");}
+  catch(e){errs.push(HSRC[i].name+" "+(e.name==="AbortError"?"超时":(e.message||"网络错误")));}}
+ var c=sget(HK,null);
+ if(c&&Array.isArray(c.items)&&c.items.length){hItems=c.items;hState={ok:false,t:c.t,src:c.src,cached:true,loading:false,err:errs.join("；")};}
+ else{hItems=[];hState={ok:false,t:0,src:"",cached:false,loading:false,err:errs.join("；")};}
+ hotRender();}
+function hotRender(){var box=$("#hotBox");if(!box)return;$("#hotAI").classList.toggle("on",hAI);$("#hotRef").textContent=hState.loading?"刷新中…":"↻ 刷新";$("#hotRef").disabled=hState.loading;
+ var meta=hState.loading&&!hItems.length?"加载中…":hState.t?(hState.cached?"缓存于 ":"更新于 ")+tstr(hState.t)+" 北京时间 · 来源 "+esc(hState.src):"";
+ $("#hotMeta").innerHTML=meta;
+ if(!hItems.length){$("#hotN").textContent="";box.innerHTML=hState.loading?'<div class="hempty">加载中…</div>':'<div class="hempty">⚠️ 暂时获取不到热榜<button class="btn" data-hot-ref type="button" style="height:32px;font-size:13px">↻ 刷新</button><small style="flex-basis:100%">'+esc(hState.err||"")+'</small></div>';return;}
+ var list=hItems.map(function(it,i){return {it:it,rk:i+1,ai:AIRE.test(it.title)};});
+ var aiN=list.filter(function(x){return x.ai;}).length;
+ if(hAI)list=list.filter(function(x){return x.ai;});
+ $("#hotN").textContent=hAI?("AI 相关 "+aiN+" / "+hItems.length):(hItems.length+" 条");
+ var shown=hAll?list:list.slice(0,SHOW);
+ var warn=hState.cached?'<div class="hwarn">⚠️ 暂时获取不到最新热榜，下面是 '+esc(tstr(hState.t))+'（'+ago(hState.t)+'）的缓存<button class="btn" data-hot-ref type="button">↻ 刷新</button></div>':"";
+ var body=shown.length?'<ol class="hlist">'+shown.map(function(x){return '<li class="hit"><span class="hrk'+(x.rk<=3?" t"+x.rk:"")+'">'+x.rk+'</span><div class="htt"><a href="'+esc(dyURL(x.it))+'" target="_blank" rel="noopener noreferrer" title="在抖音搜索：'+esc(x.it.title)+'">'+esc(x.it.title)+'</a><small>🔥 '+esc(hotFmt(x.it.hot)||"—")+(x.ai?'<span class="ait">AI 相关</span>':"")+'</small></div><button class="huse" type="button" data-hot-use="'+(x.rk-1)+'">用这个选题</button></li>';}).join("")+'</ol>'
+  :'<div class="hempty">当前热榜里没有匹配 AI 关键词的话题。<button class="btn" type="button" data-hot-aioff style="height:32px;font-size:13px">看全部</button></div>';
+ var more=list.length>SHOW?'<button class="hmore" type="button" data-hot-more>'+(hAll?"收起 ▲":"展开全部 "+list.length+" 条 ▼")+'</button>':"";
+ box.innerHTML=warn+body+more;}
+
+// ---- 提示词模板（改编自 Easel）----
+var ACC="我的账号做 AI 解说：讲当下最火的 AI 模型、AI 工具和 Agent，发抖音、小红书、B站，竖屏 60–90 秒，中文配音 + 中英双语字幕。";
+var HT=[
+ ["📊 选题评分",function(t){return "请评估这个选题值不值得做。\n选题："+t+"\n"+ACC+"\n\n按下面 7 个维度各打 1–10 分，每项写一句具体依据（不许凭感觉）：\n| 维度 | 权重 | 得分 | 依据 |\n流量潜力 25%：受众痛感 + 平台热度 + 搜索需求\n账号匹配 20%：和 AI 解说定位的契合度；如果话题本身和 AI 无关，给出 1–2 个能自然结合 AI 的切入角度，结合不了就如实打低分\n竞争差异化 15%：同类饱和度，能否切出新角度（高分 = 竞争低）\n变现潜力 15%：能否自然接广告、带货、引流\n时效价值 10%：常青还是一次性热点（高分 = 常青），并给最佳发布窗口\n制作成本 8%（反向，高分 = 好做）：只用口播 + 图文卡片 + AI 生成画面能否做出来\n合规风险 7%（反向，高分 = 低风险）：涉及医疗、金融、时政、未成年人、真人肖像要标 ⚠️ 并给规避建议\n\n综合分 = Σ(得分 ÷ 10 × 权重 × 100)。结论：≥70 做，立刻排期；50–69 改方向，给至少 2 条优化建议；<50 不做，给至少 2 个替代选题。\n不要编造数据，拿不准的写「待核实」。";}],
+ ["🪝 开头钩子 6 个",function(t){return "主题："+t+"\n"+ACC+"\n\n写 6 个开头钩子，每个两行：第 1 行开场，第 2 行反转（和开场形成矛盾或颠覆）。分别用这 6 种公式，并标出类型：\n1. 数字领衔：具体数字 + 现象 → 出乎意料的方法或代价\n2. 逆向认知：大家都说 X → 我发现恰恰相反\n3. 个人蜕变：过去状态 + 数字 → 现在状态 + 数字\n4. 权威借势：知名人物/品牌/工具 + 关联行为 → 具体结果\n5. 自我坦白：坦白一个失误或损失 → 反差\n6. 未来冲击：一个即将到来的变化 → 对普通人的具体影响\n\n规则：每行不超过 20 个字；开场行不用问句；数字用阿拉伯数字；不用破折号；不用「其实、就是、所以、然后」这类填充词；不用「可能、也许、大概」；优先第一人称；不夸大、不编造事实。\n最后推荐最适合抖音前 3 秒的一条，说明理由。";}],
+ ["🎬 分秒脚本",function(t){return "主题："+t+"\n"+ACC+"\n\n写一条 60 秒竖屏短视频脚本：\n1. 先写 3 个 Hook（从好奇缺口、模式打断、身份触发、痛点共鸣、权威背书里选 3 种），按好奇强度、打断效果、身份触发、3 秒清晰度各打 1–5 分，选总分最高的当主 Hook。\n2. 结构：Hook(0–3s) → 痛点(3–8s) → 方案/拆解(8–40s) → 洞察 + 互动引导(40–60s)。每 15–20 秒安排一次节奏中断（镜头切换、画面冲击、音效、数据冲击）。\n3. 每段按这个格式：\n[0-3s] HOOK\n口播：…\n字幕（中 / 英）：…\n画面：…（能用图文卡片、录屏、AI 生成画面就别写需要真人实拍的）\n4. 口播每句不超过 15 字，口语化，全片约 250 字；结尾不说「感谢观看」。\n5. 再给：抖音文案 100–200 字（开头用另一个 Hook 变体）、3–5 个垂直话题标签、封面 3–5 字大标题。\n6. 最后按 Hook 强度 25、内容质量 25、文案与互动引导 20、格式合规 15、算法信号 15 自评打分（满分 100），低于 80 分先自己改到 80 再交。\n不编造数据，涉及具体数字请注明来源或写「待核实」。";}],
+ ["🧹 去 AI 味润色",function(t){return "把下面这段文案改得像真人写的（选题："+t+"）。\n\n规则：\n1. 删填充和套话：首先/其次/最后、值得注意的是、不难发现、综上所述、总的来说、毋庸置疑、可以说、本质上、这意味着、在……中、对于……来说、进行/开展 + 名词。\n2. 打破公式：不用「不是 X 而是 Y」「不仅……更……」，不硬凑三点排比，改成两点或四点。\n3. 每句有人在做事，用主动语态；把「节省时间」这种空话换成具体数字或场景。\n4. 长短句交替，一句不超过 30 字；不用破折号，不用装饰性引号。\n5. 删掉像金句、像能被截图引用的句子；删「希望对你有帮助」这类助手口吻和空洞的积极结尾。\n6. 加活人感：写身体反应（「我当时就愣住了」），不写情绪总结（「我感到非常震撼」）。\n7. 事实和数字不许改，不确定的别补。\n\n输出：① 修改后全文；② 按清晰度、节奏感、真实感、价值密度、语气匹配各打 1–10 分（总分低于 35 先继续改）；③ 主要改了哪几处。\n\n【在这里粘贴要润色的文案】";}]
+];
+function tplText(){return HT[hTplI][1](hCur?("「"+hCur.title+"」（抖音热榜第 "+hCur.rk+" 名"+(hCur.hot?"，热度 "+hotFmt(hCur.hot):"")+"，"+tstr(hCur.t)+" 北京时间）"):"【在这里填主题】");}
+function hRenderDlg(){$("#hTpls").innerHTML=HT.map(function(x,i){return '<button class="chip'+(i===hTplI?" on":"")+'" type="button" data-htpl="'+i+'">'+esc(x[0])+'</button>';}).join("");$("#hText").value=tplText();}
+function hOpen(i){var it=hItems[i];if(!it)return;hCur={title:it.title,hot:it.hot,rk:i+1,t:hState.t||Date.now()};$("#hTopic").textContent=it.title;hRenderDlg();openDlg("#mHot");}
+
+// 也放进 AI 助手的模板栏（主题留空待填）
+HT.forEach(function(x){TPL.push([x[0]+"（Easel）",x[1]("【在这里填主题】")]);});
+$("#aiTpl").innerHTML=TPL.map(function(t,i){return '<button class="chip" data-tpl="'+i+'">'+esc(t[0])+'</button>';}).join("");
+
+$("#hot").addEventListener("click",function(e){var b;
+ if(e.target.closest("[data-hot-ref]")){hotLoad();return;}
+ if(e.target.closest("[data-hot-more]")){hAll=!hAll;hotRender();return;}
+ if(e.target.closest("[data-hot-aioff]")){hAI=false;sset(HAI,hAI);hotRender();return;}
+ if((b=e.target.closest("[data-hot-use]"))){hOpen(+b.getAttribute("data-hot-use"));return;}});
+$("#hotRef").onclick=function(){hotLoad();};
+$("#hotAI").onclick=function(){hAI=!hAI;sset(HAI,hAI);hAll=false;hotRender();};
+$("#hTpls").addEventListener("click",function(e){var b=e.target.closest("[data-htpl]");if(!b)return;hTplI=+b.getAttribute("data-htpl");hRenderDlg();});
+$("#hCopy").onclick=function(){copyText($("#hText").value);};
+$("#hToAI").onclick=function(){var v=$("#hText").value;closeAll();aiShow();var ta=$("#aiIn");ta.value=v;autosize();ta.focus();var s=v.indexOf("【"),en=v.indexOf("】",s);if(s>=0&&en>s){try{ta.setSelectionRange(s+1,en);}catch(x){}}};
+
+var c0=sget(HK,null);if(c0&&Array.isArray(c0.items)&&c0.items.length){hItems=c0.items;hState={ok:false,t:c0.t,src:c0.src,cached:false,loading:false,err:""};}
+hotRender();hotLoad();
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&hState.t&&Date.now()-hState.t>15*60000)hotLoad();});
+})();
+
 })();
 </script>
 </body>
